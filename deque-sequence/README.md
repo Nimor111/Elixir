@@ -1,3 +1,2 @@
 # Implementation of Deque and lazy sequence generator
-TODO make deque faster
-TODO add sequence methods
+TODO make deque faster and add sequence methods
