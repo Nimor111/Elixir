@@ -27,9 +27,16 @@ defmodule BstTest do
     assert Bst.new() |> Bst.insert(4) |> Bst.insert(3) |> Bst.insert(5) |> Bst.delete(4) |> Bst.inorder == [3] 
   end
 
-  test "can find elements" do
+  test "can find smaller element" do
+    assert Bst.new() |> Bst.insert(4) |> Bst.insert(5) |> Bst.insert(3) |> Bst.find(3) == true
+  end
+
+  test "can find root element" do
+    assert Bst.new() |> Bst.insert(4) |> Bst.insert(5) |> Bst.insert(3) |> Bst.find(4) == true
+  end
+
+  test "can find bigger element" do
     assert Bst.new() |> Bst.insert(4) |> Bst.insert(5) |> Bst.insert(3) |> Bst.find(5) == true
-    assert Bst.new() |> Bst.insert(4) |> Bst.insert(5) |> Bst.insert(3) |> Bst.find(7) == false 
   end
 
   test "can get level of element" do

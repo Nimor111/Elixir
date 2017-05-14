@@ -27,7 +27,6 @@ defmodule Bst do
   def insert(%Bst{root: r, left: l, right: nil}, value) when value < r,
     do: %Bst{root: r, left: insert(l, value), right: nil}
 
-
   # when we're on an internal node with only a right child 
   def insert(%Bst{root: v, left: nil, right: r}, value) when value > v,
     do: %Bst{root: v, left: nil, right: insert(r, value)}
@@ -45,4 +44,12 @@ defmodule Bst do
   def inorder(tree) do
     inorder(tree.left) ++ [tree.root] ++ inorder(tree.right)
   end
+
+  def find(%Bst{root: v, left: _, right: _}, value) when value == v,
+    do: true
+  def find(%Bst{root: v, left: %Bst{root: lr, left: ll, right: lri}, right: _}, value) when value < v,
+    do: find(%Bst{root: lr, left: ll, right: lri}, value)
+  def find(%Bst{root: v, left: _, right: %Bst{root: rr, left: rl, right: rri}}, value) when value > v,
+    do: find(%Bst{root: rr, left: rl, right: rri}, value)
+  def find(%Bst{}, _), do: false
 end
