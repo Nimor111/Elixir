@@ -1,10 +1,14 @@
 defmodule Table do
+  @moduledoc """
+  A module to work with tables and export them to three different formats
+  """
+
   defstruct table: []
     
   defp times(xs, 0, _func), do: xs
   defp times(xs, n, func), do: times(func.(xs), n - 1, func)
   
-  defp max_len_sublist(xs), do: Enum.map(xs, fn x -> length x end) |> Enum.max
+  defp max_len_sublist(xs), do: xs |> Enum.map(fn x -> length x end) |> Enum.max
 
   defp transpose(xs) do
     xs 
@@ -28,19 +32,30 @@ defmodule Table do
   
   defp csv_row(row) do
     [
-      Enum.map(row, &my_to_string/1) |> Enum.intersperse(",")
+      row
+      |> Enum.map(&my_to_string/1)
+      |> Enum.intersperse(",")
     ]
   end
 
   defp csv(table) do
-    Enum.map(table.table, &csv_row/1) |> Enum.intersperse("\n")
+   table.table
+   |> Enum.map(&csv_row/1)
+   |> Enum.intersperse("\n")
   end
   
   @docp """
   HTML helper functions
   """
   defp html_to_string(element) when is_binary(element) do
-    "\"" <> Regex.replace(~r/>/, Regex.replace(~r/</, Regex.replace(~r/&/, element, "&amp;"), "&lt;"), "&gt;") <> "\""
+    "\""
+    <>
+    (element
+    |> String.replace(~r/>/, "&gt;")
+    |> String.replace(~r/</, "&lt;")
+    |> String.replace(~r/&/, "&amp;"))
+    <>
+    "\""
   end
   defp html_to_string(element) when is_number(element) or is_nil(element), do: element |> to_string
 
@@ -48,7 +63,7 @@ defmodule Table do
       Enum.map(list, fn row ->
                      "<tr>"
                      <>
-                     (Enum.map(row, fn element ->
+                     (row |> Enum.map(fn element ->
                                      "<td>"
                                      <>
                                      html_to_string(element)
@@ -68,37 +83,44 @@ defmodule Table do
   @docp """
   Markdown helper functions
   """
-  def render_md_element(element) when is_binary(element) do
-    String.replace(element, ~r/\\/, "\\\\")
-      |> String.replace(~r/\*/, "\\*")
-      |> String.replace(~r/\_/, "\\_")
-      |> String.replace(~r/\{/, "\\{")
-      |> String.replace(~r/\}/, "\\}")
-      |> String.replace(~r/\|/, "\\|")
-      |> String.replace(~r/\[/, "\\[")
-      |> String.replace(~r/\]/, "\\]")
-      |> String.replace(~r/\(/, "\\(")
-      |> String.replace(~r/\)/, "\\)")
-      |> String.replace(~r/\#/, "\\#")
-      |> String.replace(~r/\+/, "\\+")
-      |> String.replace(~r/\-/, "\\-")
-      |> String.replace(~r/\./, "\\.")
-      |> String.replace(~r/\!/, "\\!")
-      |> String.replace(~r/&/, "&amp;")
-      |> String.replace(~r/>/, "&gt;")
-      |> String.replace(~r/</, "&lt;")
+  defp render_md_element(element) when is_binary(element) do
+    element
+    |> String.replace(~r/\\/, "\\\\")
+    |> String.replace(~r/\*/, "\\*")
+    |> String.replace(~r/\_/, "\\_")
+    |> String.replace(~r/\{/, "\\{")
+    |> String.replace(~r/\}/, "\\}")
+    |> String.replace(~r/\|/, "\\|")
+    |> String.replace(~r/\[/, "\\[")
+    |> String.replace(~r/\]/, "\\]")
+    |> String.replace(~r/\(/, "\\(")
+    |> String.replace(~r/\)/, "\\)")
+    |> String.replace(~r/\#/, "\\#")
+    |> String.replace(~r/\+/, "\\+")
+    |> String.replace(~r/\-/, "\\-")
+    |> String.replace(~r/\./, "\\.")
+    |> String.replace(~r/\!/, "\\!")
+    |> String.replace(~r/&/, "&amp;")
+    |> String.replace(~r/>/, "&gt;")
+    |> String.replace(~r/</, "&lt;")
   end
-  def render_md_element(element), do: html_to_string(element)
-  def render_md(list) do
-    "|" <> (Enum.map(list, &render_md_element/1) |> Enum.intersperse("|") |> Enum.join) <> "|"
+  defp render_md_element(element), do: html_to_string(element)
+  defp render_md(list) do
+    "|" <> (list
+            |> Enum.map(&render_md_element/1)
+            |> Enum.intersperse("|")
+            |> Enum.join) <> "|"
   end
 
   # def md(table) when length(table.table) == 1, do: [ render_md(table.table[0]) ]
-  def md(table) do
+  defp md(table) do
     [
       render_md(table.table |> hd) <> "\n",
-      (String.duplicate("|-", (table |> Table.size |> elem(1)) + 1) |> String.trim("-")) <> "\n",
-      Enum.map(List.delete(table.table, table.table |> hd), &render_md/1) |> Enum.intersperse("\n")
+      ("|-" |> String.duplicate((table |> Table.size |> elem(1)) + 1)
+            |> String.trim("-")) <> "\n",
+            table.table |> List.delete(table.table |> hd) 
+            |> Enum.map(&render_md/1)
+            |> Enum.intersperse("\n")
     ]
   end
 
@@ -110,7 +132,9 @@ defmodule Table do
   end
 
   def size(table) do
-    {(length table.table), Enum.map(table.table, fn a -> length a end) |> Enum.max}
+    {(length table.table), table.table
+                           |> Enum.map(fn a -> length a end)
+                           |> Enum.max}
   end
 
   def to_list(%Table{table: []}), do: []
@@ -128,25 +152,39 @@ defmodule Table do
   
   def delete_row(table, position \\ :last)
   def delete_row(table, position) when position == :last do
-    {Table.new(List.pop_at(table.table, length(table.table) - 1, []) |> elem(1)),
-      List.pop_at(table.table, length(table.table) - 1, []) |> elem(0)}
+    {Table.new(table.table 
+               |> List.pop_at(length(table.table) - 1, [])
+               |> elem(1)),
+     table.table
+     |> List.pop_at(length(table.table) - 1, [])
+     |> elem(0)}
   end
   def delete_row(table, position) do
-    {Table.new(List.pop_at(table.table, position - 1, []) |> elem(1)),
-     List.pop_at(table.table, position - 1, []) |> elem(0)}
+    {Table.new(table.table
+               |> List.pop_at(position - 1, [])
+               |> elem(1)),
+    table.table
+    |> List.pop_at(position - 1, [])
+    |> elem(0)}
   end
 
   def delete_column(table, position \\ :last) do
-    {%Table{table: transpose((delete_row(%Table{table: transpose(table.table)}, position) |> elem(0)).table)},
-     delete_row(%Table{table: transpose(table.table)}, position) |> elem(1)}
+    {%Table{table: transpose((%Table{table: transpose(table.table)}
+                               |> delete_row(position)
+                               |> elem(0)).table)},
+    %Table{table: transpose(table.table)}
+    |> delete_row(position)
+    |> elem(1)}
   end
  
   # indexing from 1
   def cell(_table, {row, column}) when row < 1 or column < 1, do: nil
   def cell(table, {row, column}) do
-    cond do
-      Enum.at(table.table, row - 1) == nil -> nil 
-      true -> Enum.at(table.table, row - 1) |> Enum.at(column - 1)
+    case Enum.at(table.table, row - 1) do
+      nil -> nil
+      _ -> table.table
+           |> Enum.at(row - 1)
+           |> Enum.at(column - 1)
     end
   end
   
