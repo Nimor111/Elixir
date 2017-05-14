@@ -6,7 +6,11 @@ defmodule Bst do
 
   @doc """
   """
-  defstruct [:root, :left, :right] 
+  defstruct [:root, :left, :right]
+
+  @type t :: %__MODULE__{
+    root: any, left: %Bst{}, right: %Bst{} 
+  }
 
   def new(), do: %Bst{}
 
@@ -14,6 +18,7 @@ defmodule Bst do
   def root(%Bst{root: root}), do: root
   
   # empty tree
+  @spec insert(%Bst{root: any, left: any, right: any}, value: any) :: t
   def insert(%Bst{root: nil}, value), do: %Bst{root: value, left: nil, right: nil}
   
   # when we reach a leaf
@@ -41,11 +46,13 @@ defmodule Bst do
     do: %Bst{root: v, left: l, right: insert(r, value)}
   
   # standard inorder traversal
+  @spec inorder(t) :: list
   def inorder(nil), do: []
   def inorder(tree) do
     inorder(tree.left) ++ [tree.root] ++ inorder(tree.right)
   end
-
+  
+  @spec find(%Bst{root: any, left: t, right: t}, any) :: boolean
   def find(%Bst{root: v, left: _, right: _}, value) when value == v,
     do: true
   def find(%Bst{root: v, left: %Bst{root: lr, left: ll, right: lri}, right: _}, value) when value < v,
@@ -54,6 +61,7 @@ defmodule Bst do
     do: find(%Bst{root: rr, left: rl, right: rri}, value)
   def find(%Bst{}, _), do: false
   
+  @spec get_level(t, any) :: integer 
   def get_level(%Bst{root: r, left: _, right: _}, value) when value == r, do: 1
   def get_level(%Bst{root: r, left: %Bst{root: lr, left: ll, right: lri}, right: _}, value) when value < r,
     do: 1 + get_level(%Bst{root: lr, left: ll, right: lri}, value)

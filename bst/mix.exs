@@ -29,7 +29,8 @@ defmodule Bst.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:credo, "~> 0.3", only: [:dev, :test]}
+      {:credo, "~> 0.3", only: [:dev, :test]},
+      {:dialyxir, "~> 0.5", only: [:dev], runtime: false}
     ]
   end
 end
