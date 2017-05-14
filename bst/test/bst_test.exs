@@ -40,7 +40,7 @@ defmodule BstTest do
   end
 
   test "can get level of element" do
-    assert Bst.new() |> Bst.insert(4) |> Bst.insert(3) |> Bst.insert(2) |> Bst.get_level(2) == 2
+    assert Bst.new() |> Bst.insert(4) |> Bst.insert(3) |> Bst.insert(2) |> Bst.get_level(2) == 3
   end
 
   test "can BFS" do

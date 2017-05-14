@@ -1,6 +1,7 @@
 defmodule Bst do
   @moduledoc """
   A module for a binary search tree
+  Making use of funky Elixir comparisons, TODO maybe type checking
   """
 
   @doc """
@@ -52,4 +53,11 @@ defmodule Bst do
   def find(%Bst{root: v, left: _, right: %Bst{root: rr, left: rl, right: rri}}, value) when value > v,
     do: find(%Bst{root: rr, left: rl, right: rri}, value)
   def find(%Bst{}, _), do: false
+  
+  def get_level(%Bst{root: r, left: _, right: _}, value) when value == r, do: 1
+  def get_level(%Bst{root: r, left: %Bst{root: lr, left: ll, right: lri}, right: _}, value) when value < r,
+    do: 1 + get_level(%Bst{root: lr, left: ll, right: lri}, value)
+  def get_level(%Bst{root: r, left: _, right: %Bst{root: rr, left: rl, right: rri}}, value) when value > r,
+    do: 1 + get_level(%Bst{root: rr, left: rl, right: rri}, value)
+  def get_level(%Bst{}, _), do: 0
 end
