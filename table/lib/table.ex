@@ -3,7 +3,7 @@ defmodule Table do
   A module to work with tables and export them to three different formats
   """
 
-  defstruct table: []
+  defstruct [table: []]
     
   defp times(xs, 0, _func), do: xs
   defp times(xs, n, func), do: times(func.(xs), n - 1, func)
